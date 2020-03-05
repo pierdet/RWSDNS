@@ -13,8 +13,8 @@ namespace RWSDNS.Api.Controllers
     [ApiController]
     public class DnsController : ControllerBase
     {
-        private readonly DNSService _dns;
-        public DnsController(DNSService dns)
+        private readonly IDNSService _dns;
+        public DnsController(IDNSService dns)
         {
             _dns = dns;
         }
