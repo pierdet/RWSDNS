@@ -47,7 +47,7 @@ namespace RWSDNS.Api.Common
         }
         public ApiResult UpdateARecord(string zone, string hostname, string ipAddress)
         {
-            // Thanks https://blog.mikejmcguire.com!
+            // Thanks https://blog.mikejmcguire.com/2014/06/15/creating-and-updating-dns-records-in-microsoft-dns-servers-with-c-net-and-wmi/!
             ManagementScope mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
             ManagementClass mgmtClass = null;
             ManagementBaseObject mgmtParams = null;
