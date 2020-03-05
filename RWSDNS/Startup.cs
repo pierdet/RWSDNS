@@ -18,6 +18,7 @@ namespace RWSDNS.Api
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers();
             services.AddScoped<DNSProvider>();
             services.AddScoped<IDNSService, DNSService>();
         }
@@ -31,11 +32,15 @@ namespace RWSDNS.Api
             }
 
             app.UseRouting();
+            
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/", async context =>
                 {
+                    endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
                     await context.Response.WriteAsync("Hello World!");
                 });
             });
