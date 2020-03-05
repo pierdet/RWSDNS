@@ -9,7 +9,7 @@ using RWSDNS.Api.Services;
 
 namespace RWSDNS.Api.Controllers
 {
-    [Route("v1/api")]
+    [Route("v1/[controller]")]
     [ApiController]
     public class DnsController : ControllerBase
     {
@@ -18,6 +18,7 @@ namespace RWSDNS.Api.Controllers
         {
             _dns = dns;
         }
+        [HttpPost]
         public ActionResult<ARecordItem> AddARecord(ARecordItem item)
         {
             var result = _dns.Add(item);
