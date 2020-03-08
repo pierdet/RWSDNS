@@ -15,7 +15,7 @@ namespace RWSDNS.Api.Common
             ManagementObjectSearcher mgmtSearch = null;
             ManagementObjectCollection mgmtDNSRecords = null;
 
-            string strQuery = $"SELECT * FROM MicrosoftDNS_AType WHERE OwnerName = {hostname}.{zone}";
+            string strQuery = string.Format("SELECT * FROM MicrosoftDNS_AType WHERE OwnerName = '{0}.{1}'", hostname, zone);
 
             mgmtScope.Connect();
 
@@ -45,7 +45,7 @@ namespace RWSDNS.Api.Common
             // Thanks https://blog.mikejmcguire.com/2014/06/15/creating-and-updating-dns-records-in-microsoft-dns-servers-with-c-net-and-wmi/!
             var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
             ManagementBaseObject mgmtParams = null;
-            string strQuery = $"SELECT * FROM MicrosoftDNS_AType WHERE OwnerName = {hostname}.{zone}";
+            string strQuery = string.Format("SELECT * FROM MicrosoftDNS_AType WHERE OwnerName = '{0}.{1}'", hostname, zone);
 
             mgmtScope.Connect();
             var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
