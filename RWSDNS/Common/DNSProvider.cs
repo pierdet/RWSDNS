@@ -11,14 +11,11 @@ namespace RWSDNS.Api.Common
     {
         public ApiResult DeleteARecord(string zone, string hostname, string ipAddress)
         {
-            ManagementScope mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
-            ManagementClass mgmtClass = null;
-            ManagementBaseObject mgmtParams = null;
+            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
             ManagementObjectSearcher mgmtSearch = null;
             ManagementObjectCollection mgmtDNSRecords = null;
-            string strQuery;
 
-            strQuery = string.Format("SELECT * FROM MicrosoftDNS_AType WHERE OwnerName = '{0}.{1}'", hostname, zone);
+            string strQuery = $"SELECT * FROM MicrosoftDNS_AType WHERE OwnerName = {hostname}.{zone}";
 
             mgmtScope.Connect();
 
@@ -27,18 +24,16 @@ namespace RWSDNS.Api.Common
             mgmtDNSRecords = mgmtSearch.Get();
 
             // Multiple A records with the same record name, but different IPv4 addresses, skip.
-            if (mgmtDNSRecords.Count > 1)
+            if (mgmtDNSRecords.Count >= 1)
             {
-                // @Todo - Implement Delete functionality
-                return new ApiResult { Success = false };
+                foreach (ManagementObject mgmtDNSRecord in mgmtDNSRecords)
+                {
+                    mgmtDNSRecord.Delete();
+                }
+                return new ApiResult { Success = true };
             }
-            // Existing A record found, update record.
-            else if (mgmtDNSRecords.Count == 1)
-            {
-                // Todo - Implement Delete functionality
-                return new ApiResult { Success = false };
-            }
-            // A record does not exist, create new record.
+            
+            // A record does not exist, return error.
             else
             {
                 // Todo - Implement Delete functionality
@@ -56,7 +51,7 @@ namespace RWSDNS.Api.Common
             var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
             var mgmtDNSRecords = mgmtSearch.Get();
 
-            // Multiple A records with the same record name, but different IPv4 addresses, skip.
+            // Multiple A records with the same record name, but different IPv4 addresses, skip and return error.
             if (mgmtDNSRecords.Count > 1)
             {
                 return new ApiResult { Success = false };
@@ -78,7 +73,7 @@ namespace RWSDNS.Api.Common
                 }
                 return new ApiResult { Success = true };
             }
-            // A record does not exist, create new record.
+            // A record does not exist, create new record and return success.
             else
             {
                 var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_AType"), null);
