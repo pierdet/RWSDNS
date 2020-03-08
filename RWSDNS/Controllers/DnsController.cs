@@ -32,5 +32,19 @@ namespace RWSDNS.Api.Controllers
                 return NotFound(item);
             }
         }
+
+        [HttpDelete]
+        public ActionResult<ARecordItem> DeleteARecord(ARecordItem item)
+        {
+            var result = _dns.Delete(item);
+            if (result.Success)
+            {
+                return Ok(item);
+            }
+            else
+            {
+                return NotFound(item);
+            }
+        }
     }
 }

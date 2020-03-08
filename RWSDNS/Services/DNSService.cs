@@ -11,9 +11,8 @@ namespace RWSDNS.Api.Services
     public interface IDNSService
     {
         ApiResult Add(ARecordItem item);
-        void remove();
-        DNSItem GetById();
-        IEnumerable<DNSItem> GetAll();
+        ApiResult Delete(ARecordItem item);
+
 
     }
     public class DNSService : IDNSService
@@ -36,19 +35,17 @@ namespace RWSDNS.Api.Services
             }
         }
 
-        public IEnumerable<DNSItem> GetAll()
+        public ApiResult Delete(ARecordItem item)
         {
-            throw new NotImplementedException();
-        }
-
-        public DNSItem GetById()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void remove()
-        {
-            throw new NotImplementedException();
+            var result = _provider.DeleteARecord(item.Zone, item.Hostname, item.IPAddress);
+            if (result.Success)
+            {
+                return new ApiResult { Success = true };
+            }
+            else
+            {
+                return new ApiResult { Success = false };
+            }
         }
     }
 }
