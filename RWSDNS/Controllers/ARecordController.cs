@@ -9,7 +9,6 @@ using RWSDNS.Api.Services;
 
 namespace RWSDNS.Api.Controllers
 {
-    // @Todo rename to ARecordController
     [Route("v1/dns/[controller]")]
     [ApiController]
     public class ARecordController : ControllerBase
