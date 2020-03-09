@@ -10,8 +10,10 @@ namespace RWSDNS.Api.Services
 {
     public interface IDNSService
     {
-        ApiResult Add(ARecordItem item);
-        ApiResult Delete(ARecordItem item);
+        ApiResult AddARecord(ARecordItem item);
+        ApiResult DeleteARecord(ARecordItem item);
+        ApiResult AddCnameRecord(CnameRecordItem item);
+        ApiResult DeleteCnameRecord(CnameRecordItem item);
 
 
     }
@@ -22,7 +24,7 @@ namespace RWSDNS.Api.Services
         {
             _provider = provider;
         } 
-        public ApiResult Add(ARecordItem item)
+        public ApiResult AddARecord(ARecordItem item)
         {
             var result = _provider.UpdateARecord(item.Zone, item.Hostname, item.IPAddress);
             if (result.Success)
@@ -35,9 +37,35 @@ namespace RWSDNS.Api.Services
             }
         }
 
-        public ApiResult Delete(ARecordItem item)
+        public ApiResult AddCnameRecord(CnameRecordItem item)
+        {
+            var result = _provider.UpdateCnameRecord(item.Zone, item.Hostname, item.PrimaryName);
+            if (result.Success)
+            {
+                return new ApiResult { Success = true };
+            }
+            else
+            {
+                return new ApiResult { Success = false };
+            }
+        }
+
+        public ApiResult DeleteARecord(ARecordItem item)
         {
             var result = _provider.DeleteARecord(item.Zone, item.Hostname, item.IPAddress);
+            if (result.Success)
+            {
+                return new ApiResult { Success = true };
+            }
+            else
+            {
+                return new ApiResult { Success = false };
+            }
+        }
+
+        public ApiResult DeleteCnameRecord(CnameRecordItem item)
+        {
+            var result = _provider.DeleteCnameRecord(item.Zone, item.Hostname, item.PrimaryName);
             if (result.Success)
             {
                 return new ApiResult { Success = true };

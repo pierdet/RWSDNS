@@ -36,7 +36,6 @@ namespace RWSDNS.Api.Common
             // A record does not exist, return error.
             else
             {
-                // Todo - Implement Delete functionality
                 return new ApiResult { Success = false };
             }
         }
@@ -87,6 +86,75 @@ namespace RWSDNS.Api.Common
                 mgmtClass.InvokeMethod("CreateInstanceFromPropertyData", mgmtParams, null);
                 
                 return new ApiResult { Success = true };
+            }
+        }
+        
+        public ApiResult UpdateCnameRecord(string zone, string hostname, string primaryName)
+        {
+            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
+            ManagementBaseObject mgmtParams = null;
+            string strQuery = string.Format("SELECT * FROM MicrosoftDNS_CNAMEType WHERE OwnerName = '{0}.{1}'", hostname, zone);
+
+            mgmtScope.Connect();
+            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            var mgmtDNSRecords = mgmtSearch.Get();
+            if(mgmtDNSRecords.Count > 1)
+            {
+                return new ApiResult { Success = false };
+            }
+            else if(mgmtDNSRecords.Count == 1)
+            {
+                foreach (ManagementObject mgmtDNSRecord in mgmtDNSRecords)
+                {
+                    if(mgmtDNSRecord["RecordData"].ToString() != primaryName)
+                    {
+                        mgmtParams = mgmtDNSRecord.GetMethodParameters("Modify");
+                        mgmtParams["PrimaryName"] = primaryName;
+
+                        mgmtDNSRecord.InvokeMethod("Modify", mgmtParams, null);
+                    }
+                    break;
+                }
+                return new ApiResult { Success = true };
+            }
+            else
+            {
+                var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_CNAMEType"), null);
+
+                mgmtParams = mgmtClass.GetMethodParameters("CreateInstanceFromPropertyData");
+                mgmtParams["DnsServerName"] = Environment.MachineName;
+                mgmtParams["ContainerName"] = zone;
+                mgmtParams["OwnerName"] = string.Format("{0}.{1}", hostname.ToLower(), zone);
+                mgmtParams["PrimaryName"] = primaryName;
+
+                mgmtClass.InvokeMethod("CreateInstanceFromPropertyData", mgmtParams, null);
+
+                return new ApiResult { Success = true };
+            }
+        }
+
+        public ApiResult DeleteCnameRecord(string zone, string hostname, string primaryName)
+        {
+            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
+            ManagementBaseObject mgmtParams = null;
+            string strQuery = string.Format("SELECT * FROM MicrosoftDNS_CNAMEType WHERE OwnerName = '{0}.{1}'", hostname, zone);
+
+            mgmtScope.Connect();
+            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            var mgmtDNSRecords = mgmtSearch.Get();
+            if (mgmtDNSRecords.Count >= 1)
+            {
+                foreach (ManagementObject mgmtDNSRecord in mgmtDNSRecords)
+                {
+                    mgmtDNSRecord.Delete();
+                }
+                return new ApiResult { Success = true };
+            }
+
+            // A record does not exist, return error.
+            else
+            {
+                return new ApiResult { Success = false };
             }
         }
     }

@@ -9,20 +9,19 @@ using RWSDNS.Api.Services;
 
 namespace RWSDNS.Api.Controllers
 {
-    // @Todo rename to ARecordController
-    [Route("v1/[controller]")]
+    [Route("v1/dns/[controller]")]
     [ApiController]
-    public class DnsController : ControllerBase
+    public class CnameRecordController : ControllerBase
     {
         private readonly IDNSService _dns;
-        public DnsController(IDNSService dns)
+        public CnameRecordController(IDNSService dns)
         {
             _dns = dns;
         }
         [HttpPost]
-        public ActionResult<ARecordItem> AddARecord(ARecordItem item)
+        public ActionResult<CnameRecordItem> AddCnameRecord(CnameRecordItem item)
         {
-            var result = _dns.Add(item);
+            var result = _dns.AddCnameRecord(item);
             if (result.Success)
             {
                 return Ok(item);
@@ -32,11 +31,10 @@ namespace RWSDNS.Api.Controllers
                 return NotFound(item);
             }
         }
-
         [HttpDelete]
-        public ActionResult<ARecordItem> DeleteARecord(ARecordItem item)
+        public ActionResult DeleteCnameRecord(CnameRecordItem item)
         {
-            var result = _dns.Delete(item);
+            var result = _dns.DeleteCnameRecord(item);
             if (result.Success)
             {
                 return Ok(item);
