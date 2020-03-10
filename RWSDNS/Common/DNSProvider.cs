@@ -246,12 +246,14 @@ namespace RWSDNS.Api.Common
             }
             else
             {
+                // @Todo - Fix, doesn't work now.
                 var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_Zone"), null);
 
                 mgmtParams = mgmtClass.GetMethodParameters("CreateZone");
                 mgmtParams["DnsServerName"] = Environment.MachineName;
                 mgmtParams["ZoneName"] = zone;
                 mgmtParams["ZoneType"] = 1;
+                mgmtParams["DsIntegrated"] = false;
 
                 mgmtClass.InvokeMethod("CreateZone", mgmtParams, null);
 
