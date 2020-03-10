@@ -251,7 +251,7 @@ namespace RWSDNS.Api.Common
                 mgmtParams = mgmtClass.GetMethodParameters("CreateZone");
                 mgmtParams["DnsServerName"] = Environment.MachineName;
                 mgmtParams["ZoneName"] = zone;
-                mgmtParams["ZoneType"] = 0;
+                mgmtParams["ZoneType"] = 1;
 
                 mgmtClass.InvokeMethod("CreateZone", mgmtParams, null);
 
