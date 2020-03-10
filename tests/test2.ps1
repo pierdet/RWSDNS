@@ -5,7 +5,7 @@ Param([string]$url)
 $zoneJson = @{
     "Zone" = "test.se"
 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$($url)/v1/dns/DnsZone" -Body $zoneJson
+Invoke-RestMethod -Method Delete -Uri "$($url)/v1/dns/DnsZone" -Body $zoneJson
 
 #A Record JSON
 $AJson = @{
@@ -13,7 +13,7 @@ $AJson = @{
     "IPAddress"="1.1.1.1"
     "Zone"="test.se"
 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$($url)/v1/dns/ARecord" -Body $AJson
+Invoke-RestMethod -Method Delete -Uri "$($url)/v1/dns/ARecord" -Body $AJson
 
 #Cname record JSON
 $CNameJson = @{
@@ -21,7 +21,7 @@ $CNameJson = @{
     "PrimaryName"="google.se"
     "Zone"="test.se"
 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$($url)/v1/dns/CnameRecord" -Body $CNameJson
+Invoke-RestMethod -Method Delete -Uri "$($url)/v1/dns/CnameRecord" -Body $CNameJson
 
 #TXT Record JSON
 $TXTJson = @{
@@ -29,4 +29,4 @@ $TXTJson = @{
     "DescriptiveText"="hej--123"
     "Zone"="test.se"
 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$($url)/v1/dns/TxtRecord" -Body $TXTJson
+Invoke-RestMethod -Method Delete -Uri "$($url)/v1/dns/TxtRecord" -Body $TXTJson
