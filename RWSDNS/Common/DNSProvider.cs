@@ -9,6 +9,8 @@ namespace RWSDNS.Api.Common
 {
     public class DNSProvider
     {
+
+        // @Todo dispose of ManagementObjectSearcher in methods
         public ApiResult DeleteARecord(string zone, string hostname, string ipAddress)
         {
             var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
@@ -136,8 +138,130 @@ namespace RWSDNS.Api.Common
         public ApiResult DeleteCnameRecord(string zone, string hostname, string primaryName)
         {
             var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
-            ManagementBaseObject mgmtParams = null;
             string strQuery = string.Format("SELECT * FROM MicrosoftDNS_CNAMEType WHERE OwnerName = '{0}.{1}'", hostname, zone);
+
+            mgmtScope.Connect();
+            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            var mgmtDNSRecords = mgmtSearch.Get();
+            if (mgmtDNSRecords.Count >= 1)
+            {
+                foreach (ManagementObject mgmtDNSRecord in mgmtDNSRecords)
+                {
+                    mgmtDNSRecord.Delete();
+                }
+                return new ApiResult { Success = true };
+            }
+
+            // A record does not exist, return error.
+            else
+            {
+                return new ApiResult { Success = false };
+            }
+        }
+
+        public ApiResult UpdateTxtRecord(string zone, string hostname, string descriptiveText)
+        {
+            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
+            ManagementBaseObject mgmtParams = null;
+            string strQuery = string.Format("SELECT * FROM MicrosoftDNS_TXTType WHERE OwnerName = '{0}.{1}'", hostname, zone);
+
+            mgmtScope.Connect();
+            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            var mgmtDNSRecords = mgmtSearch.Get();
+            if (mgmtDNSRecords.Count > 1)
+            {
+                return new ApiResult { Success = false };
+            }
+            else if (mgmtDNSRecords.Count == 1)
+            {
+                foreach (ManagementObject mgmtDNSRecord in mgmtDNSRecords)
+                {
+                    if (mgmtDNSRecord["RecordData"].ToString() != descriptiveText)
+                    {
+                        mgmtParams = mgmtDNSRecord.GetMethodParameters("Modify");
+                        mgmtParams["DescriptiveText"] = descriptiveText;
+
+                        mgmtDNSRecord.InvokeMethod("Modify", mgmtParams, null);
+                    }
+                    break;
+                }
+                return new ApiResult { Success = true };
+            }
+            else
+            {
+                var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_TXTType"), null);
+
+                mgmtParams = mgmtClass.GetMethodParameters("CreateInstanceFromPropertyData");
+                mgmtParams["DnsServerName"] = Environment.MachineName;
+                mgmtParams["ContainerName"] = zone;
+                mgmtParams["OwnerName"] = string.Format("{0}.{1}", hostname.ToLower(), zone);
+                mgmtParams["DescriptiveText"] = descriptiveText;
+
+                mgmtClass.InvokeMethod("CreateInstanceFromPropertyData", mgmtParams, null);
+
+                return new ApiResult { Success = true };
+            }
+        }
+
+        public ApiResult DeleteTxtRecord(string zone, string hostname, string descriptiveText)
+        {
+            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
+            string strQuery = string.Format("SELECT * FROM MicrosoftDNS_TXTType WHERE OwnerName = '{0}.{1}'", hostname, zone);
+
+            mgmtScope.Connect();
+            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            var mgmtDNSRecords = mgmtSearch.Get();
+            if (mgmtDNSRecords.Count >= 1)
+            {
+                foreach (ManagementObject mgmtDNSRecord in mgmtDNSRecords)
+                {
+                    mgmtDNSRecord.Delete();
+                }
+                return new ApiResult { Success = true };
+            }
+
+            // A record does not exist, return error.
+            else
+            {
+                return new ApiResult { Success = false };
+            }
+        }
+
+        public ApiResult AddDnsZone(string zone)
+        {
+            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
+            ManagementBaseObject mgmtParams = null;
+            string strQuery = string.Format("SELECT * FROM MicrosoftDNS_Zone WHERE ContainerName = '{0}'", zone);
+
+            mgmtScope.Connect();
+            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            var mgmtDNSRecords = mgmtSearch.Get();
+            if (mgmtDNSRecords.Count > 1)
+            {
+                return new ApiResult { Success = false };
+            }
+            else if (mgmtDNSRecords.Count == 1)
+            {
+                return new ApiResult { Success = false };
+            }
+            else
+            {
+                var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_Zone"), null);
+
+                mgmtParams = mgmtClass.GetMethodParameters("CreateZone");
+                mgmtParams["DnsServerName"] = Environment.MachineName;
+                mgmtParams["ZoneName"] = zone;
+                mgmtParams["ZoneType"] = 0;
+
+                mgmtClass.InvokeMethod("CreateZone", mgmtParams, null);
+
+                return new ApiResult { Success = true };
+            }
+        }
+        public ApiResult DeleteDnsZone(string zone)
+        {
+            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
+            string strQuery = string.Format("SELECT * FROM MicrosoftDNS_Zone WHERE ContainerName = '{0}'", zone);
 
             mgmtScope.Connect();
             var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));

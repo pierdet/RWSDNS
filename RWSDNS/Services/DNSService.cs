@@ -14,6 +14,10 @@ namespace RWSDNS.Api.Services
         ApiResult DeleteARecord(ARecordItem item);
         ApiResult AddCnameRecord(CnameRecordItem item);
         ApiResult DeleteCnameRecord(CnameRecordItem item);
+        ApiResult AddTxtRecord(TxtRecordItem item);
+        ApiResult DeleteTxtRecord(TxtRecordItem item);
+        ApiResult AddDnsZone(DnsZoneItem item);
+        ApiResult DeleteDnsZone(DnsZoneItem item);
 
 
     }
@@ -50,6 +54,32 @@ namespace RWSDNS.Api.Services
             }
         }
 
+        public ApiResult AddDnsZone(DnsZoneItem item)
+        {
+            var result = _provider.AddDnsZone(item.Zone);
+            if (result.Success)
+            {
+                return new ApiResult { Success = true };
+            }
+            else
+            {
+                return new ApiResult { Success = false };
+            }
+        }
+
+        public ApiResult AddTxtRecord(TxtRecordItem item)
+        {
+            var result = _provider.UpdateTxtRecord(item.Zone, item.Hostname, item.DescriptiveText);
+            if (result.Success)
+            {
+                return new ApiResult { Success = true };
+            }
+            else
+            {
+                return new ApiResult { Success = false };
+            }
+        }
+
         public ApiResult DeleteARecord(ARecordItem item)
         {
             var result = _provider.DeleteARecord(item.Zone, item.Hostname, item.IPAddress);
@@ -66,6 +96,32 @@ namespace RWSDNS.Api.Services
         public ApiResult DeleteCnameRecord(CnameRecordItem item)
         {
             var result = _provider.DeleteCnameRecord(item.Zone, item.Hostname, item.PrimaryName);
+            if (result.Success)
+            {
+                return new ApiResult { Success = true };
+            }
+            else
+            {
+                return new ApiResult { Success = false };
+            }
+        }
+
+        public ApiResult DeleteDnsZone(DnsZoneItem item)
+        {
+            var result = _provider.DeleteDnsZone(item.Zone);
+            if (result.Success)
+            {
+                return new ApiResult { Success = true };
+            }
+            else
+            {
+                return new ApiResult { Success = false };
+            }
+        }
+
+        public ApiResult DeleteTxtRecord(TxtRecordItem item)
+        {
+            var result = _provider.DeleteTxtRecord(item.Zone, item.Hostname, item.DescriptiveText);
             if (result.Success)
             {
                 return new ApiResult { Success = true };
