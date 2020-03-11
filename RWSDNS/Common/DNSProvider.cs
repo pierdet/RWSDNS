@@ -246,7 +246,6 @@ namespace RWSDNS.Api.Common
             }
             else
             {
-                // @Todo - Fix, doesn't work now.
                 var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_Zone"), null);
 
                 mgmtParams = mgmtClass.GetMethodParameters("CreateZone");
