@@ -250,10 +250,8 @@ namespace RWSDNS.Api.Common
                 var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_Zone"), null);
 
                 mgmtParams = mgmtClass.GetMethodParameters("CreateZone");
-                mgmtParams["DnsServerName"] = Environment.MachineName;
                 mgmtParams["ZoneName"] = zone;
-                mgmtParams["ZoneType"] = 1;
-                mgmtParams["DsIntegrated"] = false;
+                mgmtParams["ZoneType"] = 0;
 
                 mgmtClass.InvokeMethod("CreateZone", mgmtParams, null);
 
