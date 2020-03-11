@@ -1,11 +1,25 @@
 [cmdletbinding()]
 Param([string]$url)
 
+#skip SSL
+add-type @"
+    using System.Net;
+    using System.Security.Cryptography.X509Certificates;
+    public class TrustAllCertsPolicy : ICertificatePolicy {
+        public bool CheckValidationResult(
+            ServicePoint srvPoint, X509Certificate certificate,
+            WebRequest request, int certificateProblem) {
+            return true;
+        }
+    }
+"@
+[System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
+
 #Zone JSON
 $zoneJson = @{
     "Zone" = "test.se"
 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$($url)/v1/dns/DnsZone" -Body $zoneJson
+Invoke-RestMethod -ContentType "application/json" -Method Post -Uri "$($url)/v1/dns/DnsZone" -Body $zoneJson
 
 #A Record JSON
 $AJson = @{
@@ -13,7 +27,7 @@ $AJson = @{
     "IPAddress"="1.1.1.1"
     "Zone"="test.se"
 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$($url)/v1/dns/ARecord" -Body $AJson
+Invoke-RestMethod -ContentType "application/json" -Method Post -Uri "$($url)/v1/dns/ARecord" -Body $AJson
 
 #Cname record JSON
 $CNameJson = @{
@@ -21,7 +35,7 @@ $CNameJson = @{
     "PrimaryName"="google.se"
     "Zone"="test.se"
 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$($url)/v1/dns/CnameRecord" -Body $CNameJson
+Invoke-RestMethod -ContentType "application/json" -Method Post -Uri "$($url)/v1/dns/CnameRecord" -Body $CNameJson
 
 #TXT Record JSON
 $TXTJson = @{
@@ -29,4 +43,4 @@ $TXTJson = @{
     "DescriptiveText"="hej--123"
     "Zone"="test.se"
 } | ConvertTo-Json
-Invoke-RestMethod -Method Post -Uri "$($url)/v1/dns/TxtRecord" -Body $TXTJson
+Invoke-RestMethod -ContentType "application/json" -Method Post -Uri "$($url)/v1/dns/TxtRecord" -Body $TXTJson
