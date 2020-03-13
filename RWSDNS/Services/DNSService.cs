@@ -1,10 +1,5 @@
 ﻿using RWSDNS.Api.Common;
 using RWSDNS.Api.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Management;
-using System.Threading.Tasks;
 
 namespace RWSDNS.Api.Services
 {
@@ -30,6 +25,9 @@ namespace RWSDNS.Api.Services
         } 
         public ApiResult AddARecord(ARecordItem item)
         {
+            return _provider.UpdateARecord(item.Zone, item.Hostname, item.IPAddress);
+            // TODO: does exactly the same as below, but without creating a new object. consider if you really need this Service class as an abstraction for DnsProvider?
+            
             var result = _provider.UpdateARecord(item.Zone, item.Hostname, item.IPAddress);
             if (result.Success)
             {

@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RWSDNS.Api.Models;
+using RWSDNS.Api.Models.Response;
 using RWSDNS.Api.Services;
 
 namespace RWSDNS.Api.Controllers
 {
-    [Route("v1/dns/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/dns/[controller]")]
     [ApiController]
     public class ARecordController : ControllerBase
     {
@@ -19,12 +16,12 @@ namespace RWSDNS.Api.Controllers
             _dns = dns;
         }
         [HttpPost]
-        public ActionResult<ARecordItem> AddARecord(ARecordItem item)
+        public IActionResult AddARecord(ARecordItem item)
         {
             var result = _dns.AddARecord(item);
             if (result.Success)
             {
-                return Ok(item);
+                return Ok(new StatusMessageResponse<ARecordItem>(item, "ARecord was added!"));
             }
             else
             {

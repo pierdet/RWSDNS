@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RWSDNS.Api.Common;
+using RWSDNS.Api.OpenApi;
 using RWSDNS.Api.Services;
 
 namespace RWSDNS.Api
@@ -21,6 +17,9 @@ namespace RWSDNS.Api
             services.AddControllers();
             services.AddScoped<DNSProvider>();
             services.AddScoped<IDNSService, DNSService>();
+
+            services.AddCustomApiVersioning();
+            services.AddOpenApi();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -30,8 +29,9 @@ namespace RWSDNS.Api
             {
                 app.UseDeveloperExceptionPage();
             }
-
             app.UseRouting();
+
+            app.UseOpenApi();
 
 
             app.UseEndpoints(endpoints =>

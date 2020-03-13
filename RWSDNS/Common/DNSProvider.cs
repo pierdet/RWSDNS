@@ -1,29 +1,18 @@
 ﻿using RWSDNS.Api.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management;
-using System.Threading.Tasks;
 
 namespace RWSDNS.Api.Common
 {
     public class DNSProvider
     {
-
-        // @Todo dispose of ManagementObjectSearcher in methods
         public ApiResult DeleteARecord(string zone, string hostname, string ipAddress)
         {
-            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
-            ManagementObjectSearcher mgmtSearch = null;
-            ManagementObjectCollection mgmtDNSRecords = null;
-
             string strQuery = string.Format("SELECT * FROM MicrosoftDNS_AType WHERE OwnerName = '{0}.{1}'", hostname, zone);
 
-            mgmtScope.Connect();
+            using var mgmtSearch = CreateManagementObjectSearcher(strQuery);
 
-            mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
-
-            mgmtDNSRecords = mgmtSearch.Get();
+            var mgmtDNSRecords = mgmtSearch.Get();
 
             // Multiple A records with the same record name, but different IPv4 addresses, skip.
             if (mgmtDNSRecords.Count >= 1)
@@ -44,12 +33,9 @@ namespace RWSDNS.Api.Common
         public ApiResult UpdateARecord(string zone, string hostname, string ipAddress)
         {
             // Thanks https://blog.mikejmcguire.com/2014/06/15/creating-and-updating-dns-records-in-microsoft-dns-servers-with-c-net-and-wmi/!
-            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
-            ManagementBaseObject mgmtParams = null;
             string strQuery = string.Format("SELECT * FROM MicrosoftDNS_AType WHERE OwnerName = '{0}.{1}'", hostname, zone);
 
-            mgmtScope.Connect();
-            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            using var mgmtSearch = CreateManagementObjectSearcher(strQuery);
             var mgmtDNSRecords = mgmtSearch.Get();
 
             // Multiple A records with the same record name, but different IPv4 addresses, skip and return error.
@@ -58,13 +44,14 @@ namespace RWSDNS.Api.Common
                 return new ApiResult { Success = false };
             }
             // Existing A record found, update record.
-            else if (mgmtDNSRecords.Count == 1)
+
+            if (mgmtDNSRecords.Count == 1)
             {
                 foreach (ManagementObject mgmtDNSRecord in mgmtDNSRecords)
                 {
                     if (mgmtDNSRecord["RecordData"].ToString() != ipAddress)
                     {
-                        mgmtParams = mgmtDNSRecord.GetMethodParameters("Modify");
+                        var mgmtParams = mgmtDNSRecord.GetMethodParameters("Modify");
                         mgmtParams["IPAddress"] = ipAddress;
 
                         mgmtDNSRecord.InvokeMethod("Modify", mgmtParams, null);
@@ -77,9 +64,9 @@ namespace RWSDNS.Api.Common
             // A record does not exist, create new record and return success.
             else
             {
-                var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_AType"), null);
+                var mgmtClass = new ManagementClass(mgmtSearch.Scope, new ManagementPath("MicrosoftDNS_AType"), null);
 
-                mgmtParams = mgmtClass.GetMethodParameters("CreateInstanceFromPropertyData");
+                var mgmtParams = mgmtClass.GetMethodParameters("CreateInstanceFromPropertyData");
                 mgmtParams["DnsServerName"] = Environment.MachineName;
                 mgmtParams["ContainerName"] = zone;
                 mgmtParams["OwnerName"] = string.Format("{0}.{1}", hostname.ToLower(), zone);
@@ -93,12 +80,9 @@ namespace RWSDNS.Api.Common
         
         public ApiResult UpdateCnameRecord(string zone, string hostname, string primaryName)
         {
-            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
-            ManagementBaseObject mgmtParams = null;
             string strQuery = string.Format("SELECT * FROM MicrosoftDNS_CNAMEType WHERE OwnerName = '{0}.{1}'", hostname, zone);
 
-            mgmtScope.Connect();
-            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            using var mgmtSearch = CreateManagementObjectSearcher(strQuery);
             var mgmtDNSRecords = mgmtSearch.Get();
             if(mgmtDNSRecords.Count > 1)
             {
@@ -110,7 +94,7 @@ namespace RWSDNS.Api.Common
                 {
                     if(mgmtDNSRecord["RecordData"].ToString() != primaryName)
                     {
-                        mgmtParams = mgmtDNSRecord.GetMethodParameters("Modify");
+                        var mgmtParams = mgmtDNSRecord.GetMethodParameters("Modify");
                         mgmtParams["PrimaryName"] = primaryName;
 
                         mgmtDNSRecord.InvokeMethod("Modify", mgmtParams, null);
@@ -121,9 +105,9 @@ namespace RWSDNS.Api.Common
             }
             else
             {
-                var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_CNAMEType"), null);
+                var mgmtClass = new ManagementClass(mgmtSearch.Scope, new ManagementPath("MicrosoftDNS_CNAMEType"), null);
 
-                mgmtParams = mgmtClass.GetMethodParameters("CreateInstanceFromPropertyData");
+                var mgmtParams = mgmtClass.GetMethodParameters("CreateInstanceFromPropertyData");
                 mgmtParams["DnsServerName"] = Environment.MachineName;
                 mgmtParams["ContainerName"] = zone;
                 mgmtParams["OwnerName"] = string.Format("{0}.{1}", hostname.ToLower(), zone);
@@ -137,11 +121,9 @@ namespace RWSDNS.Api.Common
 
         public ApiResult DeleteCnameRecord(string zone, string hostname, string primaryName)
         {
-            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
             string strQuery = string.Format("SELECT * FROM MicrosoftDNS_CNAMEType WHERE OwnerName = '{0}.{1}'", hostname, zone);
 
-            mgmtScope.Connect();
-            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            using var mgmtSearch = CreateManagementObjectSearcher(strQuery);
             var mgmtDNSRecords = mgmtSearch.Get();
             if (mgmtDNSRecords.Count >= 1)
             {
@@ -161,12 +143,9 @@ namespace RWSDNS.Api.Common
 
         public ApiResult UpdateTxtRecord(string zone, string hostname, string descriptiveText)
         {
-            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
-            ManagementBaseObject mgmtParams = null;
             string strQuery = string.Format("SELECT * FROM MicrosoftDNS_TXTType WHERE OwnerName = '{0}.{1}'", hostname, zone);
 
-            mgmtScope.Connect();
-            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            using var mgmtSearch = CreateManagementObjectSearcher(strQuery);
             var mgmtDNSRecords = mgmtSearch.Get();
             if (mgmtDNSRecords.Count > 1)
             {
@@ -178,7 +157,7 @@ namespace RWSDNS.Api.Common
                 {
                     if (mgmtDNSRecord["RecordData"].ToString() != descriptiveText)
                     {
-                        mgmtParams = mgmtDNSRecord.GetMethodParameters("Modify");
+                        var mgmtParams = mgmtDNSRecord.GetMethodParameters("Modify");
                         mgmtParams["DescriptiveText"] = descriptiveText;
 
                         mgmtDNSRecord.InvokeMethod("Modify", mgmtParams, null);
@@ -189,9 +168,9 @@ namespace RWSDNS.Api.Common
             }
             else
             {
-                var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_TXTType"), null);
+                var mgmtClass = new ManagementClass(mgmtSearch.Scope, new ManagementPath("MicrosoftDNS_TXTType"), null);
 
-                mgmtParams = mgmtClass.GetMethodParameters("CreateInstanceFromPropertyData");
+                var mgmtParams = mgmtClass.GetMethodParameters("CreateInstanceFromPropertyData");
                 mgmtParams["DnsServerName"] = Environment.MachineName;
                 mgmtParams["ContainerName"] = zone;
                 mgmtParams["OwnerName"] = string.Format("{0}.{1}", hostname.ToLower(), zone);
@@ -205,11 +184,9 @@ namespace RWSDNS.Api.Common
 
         public ApiResult DeleteTxtRecord(string zone, string hostname, string descriptiveText)
         {
-            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
             string strQuery = string.Format("SELECT * FROM MicrosoftDNS_TXTType WHERE OwnerName = '{0}.{1}'", hostname, zone);
 
-            mgmtScope.Connect();
-            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            using var mgmtSearch = CreateManagementObjectSearcher(strQuery);
             var mgmtDNSRecords = mgmtSearch.Get();
             if (mgmtDNSRecords.Count >= 1)
             {
@@ -229,12 +206,9 @@ namespace RWSDNS.Api.Common
 
         public ApiResult AddDnsZone(string zone)
         {
-            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
-            ManagementBaseObject mgmtParams = null;
             string strQuery = string.Format("SELECT * FROM MicrosoftDNS_Zone WHERE ContainerName = '{0}'", zone);
 
-            mgmtScope.Connect();
-            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            using var mgmtSearch = CreateManagementObjectSearcher(strQuery);
             var mgmtDNSRecords = mgmtSearch.Get();
             if (mgmtDNSRecords.Count > 1)
             {
@@ -246,9 +220,9 @@ namespace RWSDNS.Api.Common
             }
             else
             {
-                var mgmtClass = new ManagementClass(mgmtScope, new ManagementPath("MicrosoftDNS_Zone"), null);
+                var mgmtClass = new ManagementClass(mgmtSearch.Scope, new ManagementPath("MicrosoftDNS_Zone"), null);
 
-                mgmtParams = mgmtClass.GetMethodParameters("CreateZone");
+                var mgmtParams = mgmtClass.GetMethodParameters("CreateZone");
                 mgmtParams["ZoneName"] = zone;
                 mgmtParams["ZoneType"] = 0;
 
@@ -259,11 +233,10 @@ namespace RWSDNS.Api.Common
         }
         public ApiResult DeleteDnsZone(string zone)
         {
-            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
             string strQuery = string.Format("SELECT * FROM MicrosoftDNS_Zone WHERE ContainerName = '{0}'", zone);
 
-            mgmtScope.Connect();
-            var mgmtSearch = new ManagementObjectSearcher(mgmtScope, new ObjectQuery(strQuery));
+            using var mgmtSearch = CreateManagementObjectSearcher(strQuery);
+            
             var mgmtDNSRecords = mgmtSearch.Get();
             if (mgmtDNSRecords.Count >= 1)
             {
@@ -279,6 +252,14 @@ namespace RWSDNS.Api.Common
             {
                 return new ApiResult { Success = false };
             }
+        }
+
+
+        private ManagementObjectSearcher CreateManagementObjectSearcher(string query)
+        {
+            var mgmtScope = new ManagementScope(@"\\.\Root\MicrosoftDNS");
+            mgmtScope.Connect();
+            return new ManagementObjectSearcher(mgmtScope, new ObjectQuery(query));
         }
     }
 }
