@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using RWSDNS.Api.Auth;
 using RWSDNS.Api.Models;
 using RWSDNS.Api.Models.Response;
 using RWSDNS.Api.Services;
@@ -8,6 +9,7 @@ namespace RWSDNS.Api.Controllers
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/dns/[controller]")]
     [ApiController]
+    [ApiKeyAuth]
     public class ARecordController : ControllerBase
     {
         private readonly IDNSService _dns;
