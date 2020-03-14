@@ -23,11 +23,11 @@ namespace RWSDNS.Api.Controllers
             var result = _dns.AddARecord(item);
             if (result.Success)
             {
-                return Ok(new StatusMessageResponse<ARecordItem>(item, "ARecord was added!"));
+                return Ok(new StatusMessageResponse<ARecordItem>(item, $"A record {item.Hostname} was added!"));
             }
             else
             {
-                return NotFound(item);
+                return NotFound(new StatusMessageResponse<ARecordItem>(item, $"Failed to add {item.Hostname}."));
             }
         }
 
@@ -37,11 +37,11 @@ namespace RWSDNS.Api.Controllers
             var result = _dns.DeleteARecord(item);
             if (result.Success)
             {
-                return Ok(item);
+                return Ok(new StatusMessageResponse<ARecordItem>(item, $"A record {item.Hostname} was deleted!"));
             }
             else
             {
-                return NotFound(item);
+                return NotFound(new StatusMessageResponse<ARecordItem>(item, $"Failed to delete {item.Hostname}."));
             }
         }
     }

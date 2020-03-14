@@ -12,6 +12,7 @@ using RWSDNS.Api.Models.Response;
 
 namespace RWSDNS.Api.Controllers
 {
+    // @Todo Fix so restart isn't needed to reload the appsettings.json file
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/auth/[controller]")]
     [ApiController]
@@ -29,7 +30,7 @@ namespace RWSDNS.Api.Controllers
                 return NotFound(new StatusMessageResponse<ApiKeyItem>(item, "Failed to write to configuration file"));
             }
 
-            return Ok(new StatusMessageResponse<ApiKeyItem>(item, "Successfully changed Api Key"));
+            return Ok(new StatusMessageResponse<ApiKeyItem>(item, "Successfully changed Api Key. Please restart the Webserver for the changes to take affect."));
         }
     }
 }
