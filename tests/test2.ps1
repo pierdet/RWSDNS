@@ -1,6 +1,8 @@
 [cmdletbinding()]
 Param([string]$url)
 
+# @Todo Rewrite to support new API Endpoints and the new URL:s
+
 #skip SSL
 add-type @"
     using System.Net;
