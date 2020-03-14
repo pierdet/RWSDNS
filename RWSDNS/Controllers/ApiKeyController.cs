@@ -24,12 +24,12 @@ namespace RWSDNS.Api.Controllers
         {
             var hashedKey = KeyHash.GetStringSha256Hash(item.ApiKey);
             var result = ConfigurationWriter.AddOrUpdateAppSetting("ApiKey", hashedKey);
-            if (result.Success)
+            if (!result.Success)
             {
-                return Ok(new StatusMessageResponse<ApiKeyItem>(item, "Successfully changed Api Key"));
+                return NotFound(new StatusMessageResponse<ApiKeyItem>(item, "Failed to write to configuration file"));
             }
 
-            return NotFound(new StatusMessageResponse<ApiKeyItem>(item, "Failed to write to configuration file"));
+            return Ok(new StatusMessageResponse<ApiKeyItem>(item, "Successfully changed Api Key"));
         }
     }
 }
