@@ -3,7 +3,8 @@
 RWSDNS aims to provide a RESTful API for interacting with Windows Server DNS.
 
 ## Installation on IIS 
-(Thanks https://github.com/unosquare/passcore for the template!)
+### Installation has to be done on a DNS Server, you need the .NET Core SDK in order to publish the application.
+###### (Thanks https://github.com/unosquare/passcore for the template!)
 
 1. Install IIS
 1. Download the source code and run the following command via an Command Prompt. Make sure you start the Command Prompt with the Administrator option and change directory to where the project files is saved.
@@ -21,8 +22,8 @@ RWSDNS aims to provide a RESTful API for interacting with Windows Server DNS.
 1. Click *OK* and you should be set. *You should change the default API Key which is 'Password' via the /api/v1.0/auth/ApiKey endpoint right away.*
 
 ## Example use - A Record for the DNS zone 'test.se'
-#(http post for adding/updating, http delete for deleting all)
-#**note** - Check the /tests/ folder for up-to-date URL:s in the powershell scripts
+###### http post for adding/updating, http delete for deleting all
+###### **note** - Check the /tests/ folder for up-to-date URL:s in the powershell scripts
 ![Alt text](res/ARecord.png?raw=true "Interactive example")
 
 ## Example use - CNAME Record for the DNS zone 'test.se'
